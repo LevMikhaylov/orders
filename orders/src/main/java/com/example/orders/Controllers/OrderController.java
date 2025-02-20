@@ -1,4 +1,5 @@
 package com.example.orders.Controllers;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,13 @@ public class OrderController {
         List<Order> orders = status != null ? orderService.findByStatus(status) : orderService.getAllOrders();
         return ResponseEntity.ok(orders);
     }
+
+    @GetMapping
+    public ResponseEntity<List<Order>> filterOrders(@RequestParam(required = false) LocalDate date) {
+        List<Order>orders = date != null? orderService.findByDate(date):orderService.getAllOrders();
+        return ResponseEntity.ok(orders);
+    }
+    
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
