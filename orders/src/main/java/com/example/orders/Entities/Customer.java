@@ -21,12 +21,12 @@ import lombok.experimental.Accessors;
 @Table(name = "customers")
 public class Customer {
     @Id
-    @Column
+    @Column(nullable=false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @SuppressWarnings("unused")
-    @Column
+    @Column(nullable=false)
     @Size(min = 2)
     private String name;
     @Pattern(regexp="\\+7\\(\\d{3}\\)\\d{3}-\\d{2}-\\d{2}$", message="Invalid phone number format")//Задаём формат номера телефона в России
