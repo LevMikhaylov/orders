@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-
+import com.example.orders.Logging.LoginAttemptAspect;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -25,7 +25,8 @@ public class SecurityConfigurator {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfigurator.class);
     private static final int MAX_ATTEMPTS = 3;
     private static final ConcurrentHashMap<String, Integer> attemptsCache = new ConcurrentHashMap<>();
-
+    @Autowired
+    private LoginAttemptAspect loginAttemptAspect;
     @Bean
     public UserDetailsService userDetailsService() {
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
@@ -73,17 +74,16 @@ public class SecurityConfigurator {
     }
 
     private AuthenticationFailureHandler customFailureHandler() {
-        return (HttpServletRequest request, HttpServletResponse response, Exception exception) -> {
-            String username = request.getParameter("username");
-            attemptsCache.put(username, attemptsCache.getOrDefault(username, 0) + 1);
+    return (HttpServletRequest request, HttpServletResponse response, Exception exception) -> {
+        String username = request.getParameter("username");
 
-            if (attemptsCache.get(username) >= MAX_ATTEMPTS) {
-                logger.warn("User " + username + " has been locked out due to too many failed login attempts.");
-                response.sendRedirect("/login?error=locked");
-            } else {
-                logger.warn("Failed login attempt for user: " + username);
-                response.sendRedirect("/login?error");
-            }
-        };
-    }
+        if (loginAttemptAspect.isLockedOut(username)) {
+            logger.warn("User  " + username + " has been locked out due to too many failed login attempts.");
+            response.sendRedirect("/login?error=locked");
+        } else {
+            logger.warn("Failed login attempt for user: " + username);
+            response.sendRedirect("/login?error");
+        }
+    };
+}
 }
